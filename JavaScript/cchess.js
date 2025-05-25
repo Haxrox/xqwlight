@@ -1,5 +1,8 @@
 "use strict";
 
+console.log("cchess");
+
+
 function CHR(n) {
   return String.fromCharCode(n);
 }

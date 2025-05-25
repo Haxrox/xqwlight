@@ -22,6 +22,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 "use strict";
 
+console.log("Search");
+
+
 var SHELL_STEP = [0, 1, 4, 13, 40, 121, 364, 1093];
 
 function shellSort(mvs, vls) {
@@ -130,7 +133,7 @@ MoveSort.prototype.next = function() {
   return 0;
 }
 
-var LIMIT_DEPTH = 64;
+var LIMIT_DEPTH = 1;
 var NULL_DEPTH = 2;
 var RANDOMNESS = 8;
 
@@ -405,6 +408,7 @@ Search.prototype.searchMain = function(depth, millis) {
     this.pos.makeMove(this.mvResult);
     if (this.pos.repStatus(3) == 0) {
       this.pos.undoMakeMove();
+      console.log("searchMain book:" + this.mvResult);
       return this.mvResult;
     }
     this.pos.undoMakeMove();
@@ -438,6 +442,7 @@ Search.prototype.searchMain = function(depth, millis) {
       break;
     }
   }
+  console.log("searchMain:" + this.mvResult);
   return this.mvResult;
 }
 

@@ -22,6 +22,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 "use strict";
 
+console.log("Position");
+
 function binarySearch(vlss, vl) {
   var low = 0;
   var high = vlss.length - 1;
@@ -444,14 +446,44 @@ function CHAR_TO_PIECE(c) {
 
 function RC4(key) {
   this.x = this.y = 0;
-  this.state = [];
+  this.stateV1 = [];
+  this.state   = [];
+  console.log("RC4 keyVal:" + key + ", keyLength:" + key.length + ", key=" + key);
+  
   for (var i = 0; i < 256; i ++) {
     this.state.push(i);
+    this.stateV1.push(i);
   }
+
   var j = 0;
   for (var i = 0; i < 256; i ++) {
+    var k = (i % key.length)
+  //  console.log("i=" + i + ", i % key.length= " + k + ", key[x]=" + key[k] )
     j = (j + this.state[i] + key[i % key.length]) & 0xff;
     this.swap(i, j);
+  }
+
+  j = 0;
+  var temp = 0;
+  for (var i = 0; i < 256; i ++) {
+  //  var k = (i % key.length)
+  //  console.log("i=" + i + ", i % key.length= " + k + ", key[x]=" + key[k] )
+    j = (j + this.stateV1[i]) & 0xff;
+    temp = this.stateV1[i];
+    this.stateV1[i] = this.stateV1[j];
+    this.stateV1[j] = temp;
+  }
+ 
+  var cnt = 0;
+  for (cnt = 0; cnt < 256; cnt++) {
+      if (this.state[cnt] != this.stateV1[cnt]) {
+        console.log("diff on " + cnt);
+        break;
+      }
+  }
+
+  if (cnt == 256) {
+    console.log("the same");
   }
 }
 
@@ -462,6 +494,7 @@ RC4.prototype.swap = function(i, j) {
 }
 
 RC4.prototype.nextByte = function() {
+/*  console.log("x=" + this.x + ", y=" + this.y); */
   this.x = (this.x + 1) & 0xff;
   this.y = (this.y + this.state[this.x]) & 0xff;
   this.swap(this.x, this.y);
@@ -474,16 +507,55 @@ RC4.prototype.nextLong = function() {
   var n1 = this.nextByte();
   var n2 = this.nextByte();
   var n3 = this.nextByte();
-  return n0 + (n1 << 8) + (n2 << 16) + ((n3 << 24) & 0xffffffff);
+  var fourByteNum = n0 + (n1 << 8) + (n2 << 16) + ((n3 << 24) & 0xffffffff);
+//  console.log(this.decToHex(fourByteNum, 8) + " = " + fourByteNum);
+  return fourByteNum;
 }
+
+RC4.prototype.decToHex = function(d, padding) {
+  var hex = Number(d).toString(16);
+  padding = typeof (padding) === "undefined" || padding === null ? padding = 2 : padding;
+  while (hex.length < padding) {
+      hex = "0" + hex;
+  }
+  return "0x" + hex.toUpperCase();
+}
+
+RC4.prototype.outHexArray = function(arrayValue) {
+  var temp = "[";
+  var i    = 0;
+
+  for (i = 0; i < arrayValue.length; i++) {
+
+      if (((i % 16) == 0) && (i != 0)) {
+         temp += ""
+         console.log(temp);
+         temp = "";     
+      }
+      if (i < arrayValue.length - 1) {
+         temp += arrayValue[i].toString(16) + ", ";  
+      } else {
+         temp += arrayValue[i].toString(16);        
+      }
+
+  }
+  
+  temp += "],";
+  console.log(temp);
+
+} 
 
 var PreGen_zobristKeyPlayer, PreGen_zobristLockPlayer;
 var PreGen_zobristKeyTable = [], PreGen_zobristLockTable = [];
 
 var rc4 = new RC4([0]);
+
+// Create two init values for PreGen_zobristKeyPlayer and PreGen_zobristLockPlayer
 PreGen_zobristKeyPlayer = rc4.nextLong();
 rc4.nextLong();
 PreGen_zobristLockPlayer = rc4.nextLong();
+
+// create 14*256 PreGen_zobristKeyTable and PreGen_zobristLockTable from RC4 class
 for (var i = 0; i < 14; i ++) {
   var keys = [];
   var locks = [];
@@ -491,17 +563,38 @@ for (var i = 0; i < 14; i ++) {
     keys.push(rc4.nextLong());
     rc4.nextLong();
     locks.push(rc4.nextLong());
-  }
+  } 
   PreGen_zobristKeyTable.push(keys);
   PreGen_zobristLockTable.push(locks);
 }
 
+console.log("PreGen_zobristKeytable:");
+for (var i = 0; i < 14; i ++) {
+//  console.log("PreGen_zobristKeytable:" + i);
+  var keys = PreGen_zobristKeyTable[i];
+//  console.log("keys:");
+  rc4.outHexArray(keys.map(Math.abs));
+}
+
+console.log("PreGen_zobristLockstable:");
+for (var i = 0; i < 14; i ++) {
+//  console.log("PreGen_zobristLockstable:" + i);
+  var locks = PreGen_zobristLockTable[i];
+//  console.log("locks:");
+  rc4.outHexArray(locks.map(Math.abs));
+ }
+
+console.log("[init] PreGen_zobristKeyPlayer:" + rc4.decToHex(PreGen_zobristKeyPlayer, 8));
+console.log("      PreGen_zobristLockPlayer:" + rc4.decToHex(PreGen_zobristLockPlayer, 8));
+
 function Position() {
   // sdPlayer, zobristKey, zobristLock, vlWhite, vlBlack, distance;
   // squares, mvList, pcList, keyList, chkList;
+  console.log("pos constructor")
 }
 
 Position.prototype.clearBoard = function() {
+  console.log("after clearBoard, sdPlayer:" + this.sdPlayer);
   this.sdPlayer = 0;
   this.squares = [];
   for (var sq = 0; sq < 256; sq ++) {
@@ -564,9 +657,17 @@ Position.prototype.undoMovePiece = function() {
 }
 
 Position.prototype.changeSide = function() {
+  console.log("before pos:changeSide:" + this.sdPlayer);
+  console.log(" PreGen_zobristKeyPlayer:" + rc4.decToHex(PreGen_zobristKeyPlayer, 8));
+  console.log("PreGen_zobristLockPlayer:" + rc4.decToHex(PreGen_zobristLockPlayer, 8));
+  console.log("              zobristKey:" + rc4.decToHex(this.zobristKey, 8));
+  console.log("             zobristLock:" + rc4.decToHex(this.zobristLock, 8));
   this.sdPlayer = 1 - this.sdPlayer;
   this.zobristKey ^= PreGen_zobristKeyPlayer;
   this.zobristLock ^= PreGen_zobristLockPlayer;
+  console.log("after pos:changeSide:" + this.sdPlayer);
+  console.log("          zobristKey:" + rc4.decToHex(this.zobristKey, 8));
+  console.log("         zobristLock:" + rc4.decToHex(this.zobristLock, 8));
 }
 
 Position.prototype.makeMove = function(mv) {
@@ -580,6 +681,8 @@ Position.prototype.makeMove = function(mv) {
   this.changeSide();
   this.chkList.push(this.checked());
   this.distance ++;
+  
+  console.log("Make move: " + mv + "(%d -> %d)", SRC(mv), DST(mv));
   return true;
 }
 
@@ -659,6 +762,7 @@ Position.prototype.fromFen = function(fen) {
   }
   if (this.sdPlayer == (fen.charAt(index) == "b" ? 0 : 1)) {
     this.changeSide();
+    console.log("FEN MOVE");
   }
   this.setIrrev();
 }
@@ -1065,6 +1169,7 @@ Position.prototype.mirror = function() {
   }
   if (this.sdPlayer == 1) {
     pos.changeSide();
+    console.log("Mirror Move");
   }
   return pos;
 }
@@ -1112,9 +1217,12 @@ Position.prototype.bookMove = function() {
       break;
     }
   }
+  console.log("Book Move: %d | %d (%d -> %d) | %d", BOOK_DAT[index][0], mirror ? MIRROR_MOVE(BOOK_DAT[index][1]) : BOOK_DAT[index][1], SRC(mirror ? MIRROR_MOVE(BOOK_DAT[index][1]) : BOOK_DAT[index][1]), DST(mirror ? MIRROR_MOVE(BOOK_DAT[index][1]) : BOOK_DAT[index][1]), BOOK_DAT[index][2]);
   return mvs[index];
 }
 
 Position.prototype.historyIndex = function(mv) {
   return ((this.squares[SRC(mv)] - 8) << 8) + DST(mv);
 }
+
+console.log("Position End");

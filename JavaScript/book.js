@@ -22,6 +22,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 "use strict";
 
+console.log("Book");
+
 var BOOK_DAT = [
   [203040, 34229, 6],
   [509427, 33955, 1],
@@ -12108,3 +12110,5 @@ var BOOK_DAT = [
 ];
 
 BOOK_DAT.pop();
+
+console.log("Book End");

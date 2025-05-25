@@ -22,6 +22,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 "use strict";
 
+console.log("Board");
+
 var RESULT_UNKNOWN = 0;
 var RESULT_WIN = 1;
 var RESULT_DRAW = 2;
@@ -141,7 +143,7 @@ Board.prototype.flipped = function(sq) {
 }
 
 Board.prototype.computerMove = function() {
-  return this.pos.sdPlayer == this.computer;
+   return this.pos.sdPlayer == this.computer;
 }
 
 Board.prototype.computerLastMove = function() {
@@ -197,6 +199,8 @@ Board.prototype.postAddMove = function(mv, computerMove) {
   this.sqSelected = 0;
   this.mvLast = mv;
 
+  console.log("postAddMove: " + this.mvLast + "(%d -> %d)", SRC(this.mvLast), DST(this.mvLast));
+
   if (this.pos.isMate()) {
     this.playSound(computerMove ? "loss" : "win");
     this.result = computerMove ? RESULT_LOSS : RESULT_WIN;
@@ -242,15 +246,15 @@ Board.prototype.postAddMove = function(mv, computerMove) {
     if (vlRep > -WIN_VALUE && vlRep < WIN_VALUE) {
       this.playSound("draw");
       this.result = RESULT_DRAW;
-      alertDelay("双方不变作和，辛苦了！");
+      alertDelay("It's DRAW, both side!");
     } else if (computerMove == (vlRep < 0)) {
       this.playSound("loss");
       this.result = RESULT_LOSS;
-      alertDelay("长打作负，请不要气馁！");
+      alertDelay("It's LOOP, you loss!");
     } else {
       this.playSound("win");
       this.result = RESULT_WIN;
-      alertDelay("长打作负，祝贺你取得胜利！");
+      alertDelay("It's LOOP, you win");
     }
     this.postAddMove2();
     this.busy = false;
@@ -268,7 +272,7 @@ Board.prototype.postAddMove = function(mv, computerMove) {
     if (!hasMaterial) {
       this.playSound("draw");
       this.result = RESULT_DRAW;
-      alertDelay("双方都没有进攻棋子了，辛苦了！");
+      alertDelay("It's DRAW, no piece for play on both side");
       this.postAddMove2();
       this.busy = false;
       return;
@@ -284,7 +288,7 @@ Board.prototype.postAddMove = function(mv, computerMove) {
     if (!captured) {
       this.playSound("draw");
       this.result = RESULT_DRAW;
-      alertDelay("超过自然限着作和，辛苦了！");
+      alertDelay("DRAW, tide!");
       this.postAddMove2();
       this.busy = false;
       return;
@@ -310,16 +314,20 @@ Board.prototype.postAddMove2 = function() {
 }
 
 Board.prototype.postMate = function(computerMove) {
-  alertDelay(computerMove ? "请再接再厉！" : "祝贺你取得胜利！");
+  alertDelay(computerMove ? "You loss" : "You win");
   this.postAddMove2();
   this.busy = false;
 }
 
 Board.prototype.response = function() {
+  // the previous player is NOT computer and is human, then computer start thinking. 
   if (this.search == null || !this.computerMove()) {
+    console.log("[response] not computer turn ==> " + "Previous player:" + this.pos.sdPlayer + ", the computer:" + this.computer);
     this.busy = false;
     return;
   }
+  
+  console.log ("[response] computer turn ==> " + "Previous player:" + this.pos.sdPlayer + ", the computer:" + this.computer);
   this.thinking.style.visibility = "visible";
   var this_ = this;
   this.busy = true;
@@ -398,3 +406,5 @@ Board.prototype.setSound = function(sound) {
     this.playSound("click");
   }
 }
+
+console.log("Board End");
