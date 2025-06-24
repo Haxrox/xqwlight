@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 "use strict";
 
+const BOOK_DAT = require("./book_test.js")
 console.log("Position");
 
 function binarySearch(vlss, vl) {
@@ -446,15 +447,44 @@ function CHAR_TO_PIECE(c) {
 
 function RC4(key) {
   this.x = this.y = 0;
-  this.state = [];
+  this.stateV1 = [];
+  this.state   = [];
+  console.log("RC4 keyVal:" + key + ", keyLength:" + key.length + ", key=" + key);
+  
   for (var i = 0; i < 256; i ++) {
     this.state.push(i);
+    this.stateV1.push(i);
   }
 
   var j = 0;
   for (var i = 0; i < 256; i ++) {
+    var k = (i % key.length)
+  //  console.log("i=" + i + ", i % key.length= " + k + ", key[x]=" + key[k] )
     j = (j + this.state[i] + key[i % key.length]) & 0xff;
     this.swap(i, j);
+  }
+
+  j = 0;
+  var temp = 0;
+  for (var i = 0; i < 256; i ++) {
+  //  var k = (i % key.length)
+  //  console.log("i=" + i + ", i % key.length= " + k + ", key[x]=" + key[k] )
+    j = (j + this.stateV1[i]) & 0xff;
+    temp = this.stateV1[i];
+    this.stateV1[i] = this.stateV1[j];
+    this.stateV1[j] = temp;
+  }
+ 
+  var cnt = 0;
+  for (cnt = 0; cnt < 256; cnt++) {
+      if (this.state[cnt] != this.stateV1[cnt]) {
+        console.log("diff on " + cnt);
+        break;
+      }
+  }
+
+  if (cnt == 256) {
+    console.log("the same");
   }
 }
 
@@ -465,6 +495,7 @@ RC4.prototype.swap = function(i, j) {
 }
 
 RC4.prototype.nextByte = function() {
+/*  console.log("x=" + this.x + ", y=" + this.y); */
   this.x = (this.x + 1) & 0xff;
   this.y = (this.y + this.state[this.x]) & 0xff;
   this.swap(this.x, this.y);
@@ -477,16 +508,55 @@ RC4.prototype.nextLong = function() {
   var n1 = this.nextByte();
   var n2 = this.nextByte();
   var n3 = this.nextByte();
-  return n0 + (n1 << 8) + (n2 << 16) + ((n3 << 24) & 0xffffffff);
+  var fourByteNum = n0 + (n1 << 8) + (n2 << 16) + ((n3 << 24) & 0xffffffff);
+  // console.log(this.decToHex(fourByteNum, 8) + " = " + fourByteNum);
+  return fourByteNum;
 }
+
+RC4.prototype.decToHex = function(d, padding) {
+  var hex = Number(d).toString(16);
+  padding = typeof (padding) === "undefined" || padding === null ? padding = 2 : padding;
+  while (hex.length < padding) {
+      hex = "0" + hex;
+  }
+  return "0x" + hex.toUpperCase();
+}
+
+RC4.prototype.outHexArray = function(arrayValue) {
+  var temp = "[";
+  var i    = 0;
+
+  for (i = 0; i < arrayValue.length; i++) {
+
+      if (((i % 16) == 0) && (i != 0)) {
+         temp += ""
+         console.log(temp);
+         temp = "";     
+      }
+      if (i < arrayValue.length - 1) {
+         temp += arrayValue[i].toString(16) + ", ";  
+      } else {
+         temp += arrayValue[i].toString(16);        
+      }
+
+  }
+  
+  temp += "],";
+  console.log(temp);
+
+} 
 
 var PreGen_zobristKeyPlayer, PreGen_zobristLockPlayer;
 var PreGen_zobristKeyTable = [], PreGen_zobristLockTable = [];
 
 var rc4 = new RC4([0]);
+
+// Create two init values for PreGen_zobristKeyPlayer and PreGen_zobristLockPlayer
 PreGen_zobristKeyPlayer = rc4.nextLong();
 rc4.nextLong();
 PreGen_zobristLockPlayer = rc4.nextLong();
+
+// create 14*256 PreGen_zobristKeyTable and PreGen_zobristLockTable from RC4 class
 for (var i = 0; i < 14; i ++) {
   var keys = [];
   var locks = [];
@@ -498,6 +568,25 @@ for (var i = 0; i < 14; i ++) {
   PreGen_zobristKeyTable.push(keys);
   PreGen_zobristLockTable.push(locks);
 }
+
+/* console.log("PreGen_zobristKeytable:");
+for (var i = 0; i < 14; i ++) {
+//  console.log("PreGen_zobristKeytable:" + i);
+  var keys = PreGen_zobristKeyTable[i];
+//  console.log("keys:");
+  rc4.outHexArray(keys.map(Math.abs));
+} */
+
+/* console.log("PreGen_zobristLockstable:");
+for (var i = 0; i < 14; i ++) {
+//  console.log("PreGen_zobristLockstable:" + i);
+  var locks = PreGen_zobristLockTable[i];
+//  console.log("locks:");
+  rc4.outHexArray(locks.map(Math.abs));
+ } */
+
+console.log("[init] PreGen_zobristKeyPlayer:" + rc4.decToHex(PreGen_zobristKeyPlayer, 8));
+console.log("      PreGen_zobristLockPlayer:" + rc4.decToHex(PreGen_zobristLockPlayer, 8));
 
 function Position() {
   // sdPlayer, zobristKey, zobristLock, vlWhite, vlBlack, distance;
@@ -537,8 +626,11 @@ Position.prototype.addPiece = function(sq, pc, bDel) {
         PIECE_VALUE[pcAdjust][SQUARE_FLIP(sq)];
     pcAdjust += 7;
   }
+
   this.zobristKey ^= PreGen_zobristKeyTable[pcAdjust][sq];
   this.zobristLock ^= PreGen_zobristLockTable[pcAdjust][sq];
+  
+  // console.log("sq: %i, pc:%i, pcAdj: %i", sq, pc, pcAdjust);
 }
 
 Position.prototype.movePiece = function(mv) {
@@ -569,9 +661,17 @@ Position.prototype.undoMovePiece = function() {
 }
 
 Position.prototype.changeSide = function() {
+  console.log("before pos:changeSide:" + this.sdPlayer);
+  console.log(" PreGen_zobristKeyPlayer:" + rc4.decToHex(PreGen_zobristKeyPlayer>>>1, 8));
+  console.log("PreGen_zobristLockPlayer:" + rc4.decToHex(PreGen_zobristLockPlayer>>>1, 8));
+  console.log("              zobristKey:" + rc4.decToHex(this.zobristKey>>>1, 8));
+  console.log("             zobristLock:" + rc4.decToHex(this.zobristLock>>>1, 8));
   this.sdPlayer = 1 - this.sdPlayer;
   this.zobristKey ^= PreGen_zobristKeyPlayer;
   this.zobristLock ^= PreGen_zobristLockPlayer;
+  console.log("after pos:changeSide:" + this.sdPlayer);
+  console.log("          zobristKey:" + rc4.decToHex(this.zobristKey>>>1, 8));
+  console.log("         zobristLock:" + rc4.decToHex(this.zobristLock>>>1, 8));
 }
 
 Position.prototype.makeMove = function(mv) {
@@ -585,6 +685,8 @@ Position.prototype.makeMove = function(mv) {
   this.changeSide();
   this.chkList.push(this.checked());
   this.distance ++;
+  
+  console.log("Make move: " + mv + "(%d -> %d)", SRC(mv), DST(mv));
   return true;
 }
 
@@ -1078,23 +1180,31 @@ Position.prototype.mirror = function() {
 
 Position.prototype.bookMove = function() {
   if (typeof BOOK_DAT != "object" || BOOK_DAT.length == 0) {
+    console.log("no book opened!");
     return 0;
   }
   var mirror = false;
   var lock = this.zobristLock >>> 1; // Convert into Unsigned
+  lock = 2032908117;
+  console.log("lock: %i", lock);
   var index = binarySearch(BOOK_DAT, lock);
+ // var index = binarySearch(BOOK_DAT, 1556883615);
+  console.log("index: " + index);
   if (index < 0) {
     mirror = true;
     lock = this.mirror().zobristLock >>> 1; // Convert into Unsigned
     index = binarySearch(BOOK_DAT, lock);
   }
   if (index < 0) {
+    console.log("bookMove no move!");
     return 0;
   }
   index --;
   while (index >= 0 && BOOK_DAT[index][0] == lock) {
     index --;
   }
+    console.log("index: " + index);
+
   var mvs = [], vls = [];
   var value = 0;
   index ++;
@@ -1110,6 +1220,7 @@ Position.prototype.bookMove = function() {
     index ++;
   }
   if (value == 0) {
+    console.log("bookMove no value!");
     return 0;
   }
   value = Math.floor(Math.random() * value);
@@ -1127,4 +1238,26 @@ Position.prototype.historyIndex = function(mv) {
   return ((this.squares[SRC(mv)] - 8) << 8) + DST(mv);
 }
 
+var pos = new Position();
+pos.fromFen("9/2Cca4/3k1C3/4P1p2/4N1b2/4R1r2/4c1n2/3p1n3/2rNK4/9 w");
+console.log(rc4.decToHex(pos.zobristKey>>>1, 8));
+pos.changeSide();
+pos.bookMove();
+
+/* 
+pos.fromFen("rnbakabnr/9/9/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1");
+console.log(rc4.decToHex(pos.zobristKey>>>1, 8));
+
+pos.fromFen("rnbakabnr/9/1c7/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1");
+console.log(rc4.decToHex(pos.zobristKey>>>1, 8));
+
+pos.fromFen("rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1");
+console.log(rc4.decToHex(pos.zobristKey>>>1, 8));
+ */
 console.log("Position End");
+
+module.exports = {
+  Position,
+  IN_BOARD,
+  MOVE
+}

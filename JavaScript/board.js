@@ -32,6 +32,8 @@ var RESULT_LOSS = 3;
 var BOARD_WIDTH = 521;
 var BOARD_HEIGHT = 577;
 var SQUARE_SIZE = 57;
+BOARD_WIDTH += 40;  // add extra space on the board for warning and coordinate
+BOARD_HEIGHT += 40; // add extra space on the board for warning and coordinate
 var SQUARE_LEFT = (BOARD_WIDTH - SQUARE_SIZE * 9) >> 1;
 var SQUARE_TOP = (BOARD_HEIGHT - SQUARE_SIZE * 10) >> 1;
 var THINKING_SIZE = 32;
@@ -82,7 +84,7 @@ function Board(container, images, sounds) {
   style.position = "relative";
   style.width = BOARD_WIDTH + "px";
   style.height = BOARD_HEIGHT + "px";
-  style.background = "url(" + images + "board.jpg)";
+  style.background = "url(" + images + "boardTW.png)";
   var this_ = this;
   for (var sq = 0; sq < 256; sq ++) {
     if (!IN_BOARD(sq)) {
@@ -198,8 +200,6 @@ Board.prototype.postAddMove = function(mv, computerMove) {
   this.drawSquare(DST(mv), true);
   this.sqSelected = 0;
   this.mvLast = mv;
-
-  console.log("postAddMove: " + this.mvLast + "(%d -> %d)", SRC(this.mvLast), DST(this.mvLast));
 
   if (this.pos.isMate()) {
     this.playSound(computerMove ? "loss" : "win");
@@ -322,12 +322,9 @@ Board.prototype.postMate = function(computerMove) {
 Board.prototype.response = function() {
   // the previous player is NOT computer and is human, then computer start thinking. 
   if (this.search == null || !this.computerMove()) {
-    console.log("[response] not computer turn ==> " + "Previous player:" + this.pos.sdPlayer + ", the computer:" + this.computer);
     this.busy = false;
     return;
   }
-  
-  console.log ("[response] computer turn ==> " + "Previous player:" + this.pos.sdPlayer + ", the computer:" + this.computer);
   this.thinking.style.visibility = "visible";
   var this_ = this;
   this.busy = true;

@@ -1,5 +1,5 @@
 "use strict";
-
+const { Position, IN_BOARD, MOVE } = require("./zobristHashingExe.js")
 console.log("Test");
 
 var PUZZLE_LIST = [
@@ -247,7 +247,12 @@ var PUZZLE_LIST = [
 
 function test() {
   var pos = new Position();
-  var legal = 0, gened = 0, moved = 0, check = 0;
+  pos.fromFen(PUZZLE_LIST[0]);
+//  console.log(rc4.decToHex(pos.zobristKey>>>1, 8));
+  pos.changeSide();
+  pos.bookMove();
+
+/*   var legal = 0, gened = 0, moved = 0, check = 0;
   for (var i = 0; i < PUZZLE_LIST.length; i ++) {
     pos.fromFen(PUZZLE_LIST[i]);
     for (var sqSrc = 0; sqSrc < 256; sqSrc ++) {
@@ -270,4 +275,5 @@ function test() {
     gened += mvs.length;
   }
   alert(legal + "|" + gened + "|" + moved + "|" + check);
-}
+ */}
+test();
