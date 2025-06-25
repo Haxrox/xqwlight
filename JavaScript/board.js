@@ -84,7 +84,7 @@ function Board(container, images, sounds) {
   style.position = "relative";
   style.width = BOARD_WIDTH + "px";
   style.height = BOARD_HEIGHT + "px";
-  style.background = "url(" + images + "boardTW.png)";
+  style.background = "url(" + images + "BoardTW.png)";
   var this_ = this;
   for (var sq = 0; sq < 256; sq ++) {
     if (!IN_BOARD(sq)) {
@@ -320,7 +320,7 @@ Board.prototype.postMate = function(computerMove) {
 }
 
 Board.prototype.response = function() {
-  // the previous player is NOT computer and is human, then computer start thinking. 
+  // the previous player is NOT computer and is human, then computer start thinking.
   if (this.search == null || !this.computerMove()) {
     this.busy = false;
     return;

@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 
 console.log("cchess");
 
@@ -27,28 +27,28 @@ function move2IccsTW(pp, sqSrc, sqDst) {
     var curPosA = CHR(ASC("A") + FILE_X(sqDst) - FILE_LEFT);
     var curPosB = ASC("9") - RANK_Y(sqDst) + RANK_TOP;
 
-    var text = (ppType == 'r' ? '?' : '?');
+    var text = (ppType == 'r' ? '紅' : '黑');
     switch (ppCode) {
         case 'k':
-            text += (ppType == 'r' ? '?' : '?');
+            text += (ppType == 'r' ? '帥' : '將');
             break;
         case 'a':
-            text += (ppType == 'r' ? '?' : '?');
+            text += (ppType == 'r' ? '仕' : '士');
             break;
         case 'b':
-            text += (ppType == 'r' ? '?' : '?');
+            text += (ppType == 'r' ? '相' : '象');
             break;
         case 'n':
-            text += (ppType == 'r' ? '?' : '?');
+            text += (ppType == 'r' ? '碼' : '馬');
             break;
         case 'r':
-            text += (ppType == 'r' ? '?' : '?');
+            text += (ppType == 'r' ? '俥' : '車');
             break;
         case 'c':
-            text += (ppType == 'r' ? '?' : '?');
+            text += (ppType == 'r' ? '砲' : '包');
             break;
         case 'p':
-            text += (ppType == 'r' ? '?' : '?');
+            text += (ppType == 'r' ? '兵' : '卒');
             break;
     }
 
@@ -56,7 +56,7 @@ function move2IccsTW(pp, sqSrc, sqDst) {
 
     if (ppType == 'r') {
         text += eng2tw(prePosA, ppType);
-        text += (((curPosB - prePosB) > 0) ? "?" : (((curPosB - prePosB) == 0) ? "?" : "?"));
+        text += (((curPosB - prePosB) > 0) ? "進" : (((curPosB - prePosB) == 0) ? "平" : "退"));
 
         if (((curPosB - prePosB) > 0) && ccbool) {
             text += eng2twV(curPosB - prePosB);
@@ -68,7 +68,7 @@ function move2IccsTW(pp, sqSrc, sqDst) {
 
     } else {
         text += eng2tw(prePosA, ppType);
-        text += (((curPosB - prePosB) > 0) ? "?" : (((curPosB - prePosB) == 0) ? "?" : "?"));
+        text += (((curPosB - prePosB) > 0) ? "退" : (((curPosB - prePosB) == 0) ? "平" : "進"));
 
         if (((curPosB - prePosB) > 0) && ccbool) {
             text += (curPosB - prePosB);
@@ -86,31 +86,31 @@ function eng2tw(cc, tt) {
     if (tt == "r") {
         switch (cc) {
             case 'A':
-                return "?";
+                return "九";
                 break;
             case 'B':
-                return "?";
+                return "八";
                 break;
             case 'C':
-                return "?";
+                return "七";
                 break;
             case 'D':
-                return "?";
+                return "六";
                 break;
             case 'E':
-                return "?";
+                return "五";
                 break;
             case 'F':
-                return "?";
+                return "四";
                 break;
             case 'G':
-                return "?";
+                return "三";
                 break;
             case 'H':
-                return "?";
+                return "二";
                 break;
             case 'I':
-                return "?";
+                return "一";
                 break;
         }
     } else {
@@ -151,31 +151,31 @@ function eng2tw(cc, tt) {
 function eng2twV(cc) {
     switch (cc) {
         case 9:
-            return "?";
+            return "九";
             break;
         case 8:
-            return "?";
+            return "八";
             break;
         case 7:
-            return "?";
+            return "七";
             break;
         case 6:
-            return "?";
+            return "六";
             break;
         case 5:
-            return "?";
+            return "五";
             break;
         case 4:
-            return "?";
+            return "四";
             break;
         case 3:
-            return "?";
+            return "三";
             break;
         case 2:
-            return "?";
+            return "二";
             break;
         case 1:
-            return "?";
+            return "一";
             break;
     }
 }
