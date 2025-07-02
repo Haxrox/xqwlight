@@ -217,6 +217,32 @@
                 }
                 board.flushBoard();
             }
+
+            function send(endpoint, data) {
+              return fetch(`https://haxtech.ddns.net/${endpoint}`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(data)
+              });
+            }
+            // Handle closing tab
+            let startTime = new Date();
+            console.log('Xiangqi started at ' + startTime);
+            window.addEventListener('beforeunload', async function (evt) {
+              let endTime = new Date();
+              let duration = (endTime - startTime);
+
+              await send('api/log', {
+                  tag: "xqwlight",
+                  log: `Duration: ${duration}`
+              }).then((response) => {
+                  console.log('Close request sent | response: ', response);
+              }).catch(error => {
+                  console.error('Error sending close request:', error);
+              });
+          });
              --></script>
 </body>
 
