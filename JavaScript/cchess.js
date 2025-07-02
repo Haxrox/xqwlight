@@ -52,7 +52,7 @@ function move2IccsTW(pp, sqSrc, sqDst) {
             break;
     }
 
-    var ccbool = (ppCode == "k") || (ppCode == "r") || (ppCode == "c") || (ppCode == "p"); 
+    var ccbool = (ppCode == "k") || (ppCode == "r") || (ppCode == "c") || (ppCode == "p");
 
     if (ppType == 'r') {
         text += eng2tw(prePosA, ppType);
