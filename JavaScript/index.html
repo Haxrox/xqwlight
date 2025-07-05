@@ -12,7 +12,7 @@
   <style type="text/css">
     <!--
     body {
-      background: url(../background.gif);
+      background: url(./images/background.gif);
     }
 
     span.td {
@@ -218,25 +218,27 @@
                 board.flushBoard();
             }
 
-            function send(endpoint, data) {
-              return fetch(`https://haxtech.ddns.net/${endpoint}`, {
-                  method: 'POST',
+            function send(endpoint, method="GET", data) {
+              console.log(`${endpoint} | data: `, data);
+              return fetch(endpoint, {
+                  method: method,
                   headers: {
                       'Content-Type': 'application/json'
                   },
                   body: JSON.stringify(data)
               });
             }
+
             // Handle closing tab
             let startTime = new Date();
             console.log('Xiangqi started at ' + startTime);
             window.addEventListener('beforeunload', async function (evt) {
               let endTime = new Date();
-              let duration = (endTime - startTime);
+              let duration = (endTime - startTime)/1000;
 
-              await send('api/log', {
+              await send('api/log', "POST", {
                   tag: "xqwlight",
-                  log: `Duration: ${duration}`
+                  log: `Duration: ${duration}s`
               }).then((response) => {
                   console.log('Close request sent | response: ', response);
               }).catch(error => {
